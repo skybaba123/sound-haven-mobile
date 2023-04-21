@@ -31,6 +31,7 @@ const UiContextProvider = ({ children }) => {
         shouldShowAlert: true,
         shouldPlaySound: false,
         shouldSetBadge: false,
+        autoDismiss: true,
       }),
     });
 
@@ -38,7 +39,7 @@ const UiContextProvider = ({ children }) => {
       content: {
         title: title,
         body: body,
-        importance: "high",
+        color: "red",
       },
       trigger: null,
       identifier: "playing",

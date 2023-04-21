@@ -7,10 +7,11 @@ import {
   StyleSheet,
   Text,
   View,
+  Switch,
 } from "react-native";
 import React, { useContext, useEffect, useState } from "react";
 import HeadText from "../UI/HeadText";
-import profileImage from "../../assets/images/IMG_20210723_191354_886.jpg";
+// import profileImage from "../../assets/images/IMG_20210723_191354_886.jpg";
 import { theme } from "../utils/colors";
 import { ThemeContext } from "../store/theme";
 import { Ionicons } from "@expo/vector-icons";
@@ -83,6 +84,7 @@ const ProfileScreen = ({ navigation }) => {
   const uiCtx = useContext(UiContext);
   const soundCtx = useContext(SoundContext);
   const [loading, setLoading] = useState(false);
+  const [switched, setSwitched] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -119,13 +121,10 @@ const ProfileScreen = ({ navigation }) => {
   };
 
   const subscribeHandler = () => {
-    authCtx.setSubscribed(!authCtx.subscribed);
-    console.log(authCtx.subscribed);
-    if (authCtx.subscribed) {
-      Alert.alert("subscribed", "Your'e now subscribed");
-    } else {
-      Alert.alert("UnSubscribed", "You've unsubscribed");
-    }
+    Alert.alert(
+      "Alert",
+      "This App is still in it's develpement stage, for now you can click on the switch above to turn on subscription if you don't have enough points to play sound"
+    );
   };
 
   const logoutHandler = async () => {
@@ -152,6 +151,7 @@ const ProfileScreen = ({ navigation }) => {
         <View>
           <HeadText text="Profile" style={styles.logoText} />
         </View>
+
         <Text style={[styles.cardText, { color: theme[`pT-${colorIndex}`] }]}>
           Pts:
           {loading ? (
@@ -162,10 +162,42 @@ const ProfileScreen = ({ navigation }) => {
         </Text>
       </View>
 
-      <Image style={styles.imageStyle} source={profileImage} />
+      <View
+        style={[
+          styles.imageStyle,
+          { backgroundColor: theme[`sBg-${colorIndex}`] },
+        ]}
+      >
+        <Text
+          style={[styles.profileText, { color: theme[`pT-${colorIndex}`] }]}
+        >
+          {authCtx.fullName[0].toUpperCase()}
+          {authCtx.fullName[1].toUpperCase()}
+        </Text>
+      </View>
       <Text style={[styles.nameText, { color: theme[`pT-${colorIndex}`] }]}>
         {authCtx.fullName}
       </Text>
+
+      <Switch
+        trackColor={{ false: "#767577", true: "#81b0ff" }}
+        value={switched}
+        onValueChange={(value) => {
+          setSwitched((prev) => !prev);
+          authCtx.setSubscribed(value);
+          console.log(value);
+          value &&
+            Alert.alert(
+              "Dev Mode",
+              "You're now subscribed\nAlways switch this on if you don't have points to play sound"
+            );
+          !value &&
+            Alert.alert(
+              "Dev Mode",
+              "Subscription Turned off\nyou will now be charged with point for each sound played"
+            );
+        }}
+      />
 
       <ScrollView
         showsVerticalScrollIndicator={false}
@@ -223,6 +255,13 @@ const styles = StyleSheet.create({
     height: 100,
     borderRadius: 50,
     marginBottom: "4%",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  profileText: {
+    fontFamily: "montserrat-bold",
+    fontSize: 35,
   },
 
   nameText: {

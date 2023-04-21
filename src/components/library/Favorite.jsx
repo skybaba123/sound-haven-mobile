@@ -1,39 +1,32 @@
 import { FlatList, StyleSheet, Text, View } from "react-native";
 import React, { useCallback, useContext, useEffect, useState } from "react";
 import Sound from "../Sound";
-import { allSounds } from "../../utils/allSounds";
 import { SoundContext } from "../../store/soundFunc";
 import { AuthContext } from "../../store/auth";
 import GenLoadingAnimation from "../lottie/GenLoadingAnimation";
-import { getUser } from "../../utils/api";
+import { fetchSounds, getUser } from "../../utils/api";
 import NoDataAnimation from "../lottie/NoDataAnimation";
 import { useFocusEffect } from "@react-navigation/native";
 
 const Favorite = () => {
   const soundCtx = useContext(SoundContext);
   const authCtx = useContext(AuthContext);
-  const favorites = allSounds.filter((sound) =>
-    authCtx.favoriteSounds.includes(sound.id)
-  );
+
+  const [favorites, setFavorites] = useState([]);
   const [loading, setLoading] = useState(false);
   const noData = favorites.length <= 0;
-
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     setLoading(true);
-  //     const data = await getUser();
-  //     authCtx.setFavoriteSounds(data.favoriteSounds);
-  //     setLoading(false);
-  //   };
-  //   fetchData();
-  // }, []);
 
   useFocusEffect(
     useCallback(() => {
       const fetchData = async () => {
         setLoading(true);
-        const data = await getUser();
-        authCtx.setFavoriteSounds(data.favoriteSounds);
+        const user = await getUser();
+        const fetchedSounds = await fetchSounds();
+        setFavorites(() =>
+          fetchedSounds.filter((sound) =>
+            user.favoriteSounds.includes(sound.id)
+          )
+        );
         setLoading(false);
       };
       fetchData();
@@ -50,6 +43,7 @@ const Favorite = () => {
           <FlatList
             showsVerticalScrollIndicator={false}
             data={favorites}
+            initialNumToRender={5}
             renderItem={({ item, index }) => (
               <Sound
                 onPress={soundCtx.soundPlayHandler.bind(

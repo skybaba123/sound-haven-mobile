@@ -58,6 +58,7 @@ const Sound = ({
         <Image style={styles.image} source={image} />
         <View>
           <Text
+            numberOfLines={1}
             style={[
               styles.soundName,
               {
@@ -70,6 +71,7 @@ const Sound = ({
             {soundName}
           </Text>
           <Text
+            numberOfLines={1}
             style={[
               styles.owner,
               {
@@ -128,10 +130,12 @@ const styles = StyleSheet.create({
     fontFamily: "montserrat-medium",
     fontSize: 16,
     marginBottom: "3%",
+    maxWidth: 250,
   },
 
   owner: {
     fontFamily: "montserrat-medium",
     fontSize: 15,
+    maxWidth: 200,
   },
 });

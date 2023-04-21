@@ -6,6 +6,8 @@ import { Alert } from "react-native";
 import {
   addNewFavoriteApi,
   createPlaylistApi,
+  fetchSounds,
+  increaseNumOfPlay,
   reducePointsApi,
   removeFavoriteApi,
   userPlaylistApi,
@@ -16,6 +18,7 @@ import { UiContext } from "./ui";
 
 export const SoundContext = createContext({
   soundRef: null,
+  allSounds: [],
   playingBoard: Boolean,
   currentSound: Object,
   isPlaying: Boolean,
@@ -64,6 +67,7 @@ const SoundContextProvider = ({ children }) => {
   const authCtx = useContext(AuthContext);
   const uiCtx = useContext(UiContext);
 
+  const [allSounds, setAllSounds] = useState([]);
   const [playingBoard, setplayingBoard] = useState(false);
   const activeSound = useRef({});
   const [isPlaying, setIsPlaying] = useState(false);
@@ -81,7 +85,6 @@ const SoundContextProvider = ({ children }) => {
   const [addToPlaylistBoard, setAddToPlaylistBoard] = useState(false);
   const toast = useContext(UiContext).toastBoard;
   const soundNotification = useContext(UiContext).soundNotification;
-  const [soundStatus, setSoundStatus] = useState({});
 
   useEffect(() => {
     const fetchLocalStorages = async () => {
@@ -111,6 +114,12 @@ const SoundContextProvider = ({ children }) => {
       }
     };
 
+    const getSounds = async () => {
+      const fetchedSounds = await fetchSounds();
+      setAllSounds(fetchedSounds);
+    };
+
+    getSounds();
     fetchLocalStorages();
   }, []);
 
@@ -192,6 +201,13 @@ const SoundContextProvider = ({ children }) => {
           try {
             if (modeRef.current === "singleMode") {
               await soundRef.current.setIsLoopingAsync(true);
+
+              if (status.didJustFinish) {
+                const id =
+                  currentSoundId.current ||
+                  (await AsyncStorage.getItem("soundId"));
+                await increaseNumOfPlay(id);
+              }
             } else if (modeRef.current === "loopMode") {
               await soundRef.current.setIsLoopingAsync(false);
             }
@@ -213,13 +229,14 @@ const SoundContextProvider = ({ children }) => {
   };
 
   const soundPlayHandler = async (index, id, currentArray) => {
-    const status = await soundRef.current.getStatusAsync();
-    if (!status?.isLoaded) {
-      return uiCtx.toastBoard("Still loading");
-    }
+    // const status =
+    //   soundRef.current && (await soundRef.current.getStatusAsync());
+    // if (!status?.isLoaded) {
+    //   return uiCtx.toastBoard("Still loading");
+    // }
     try {
       if (!authCtx.subscribed && authCtx.points <= 0) {
-        Alert.alert("Points", "Not enough to complete this action");
+        Alert.alert("Points", "Not enough to complete this action.\nGo to your profile page and switch on subscibed mode");
         throw new Error("You do not have enough points");
       }
 
@@ -245,6 +262,7 @@ const SoundContextProvider = ({ children }) => {
       await AsyncStorage.setItem("soundId", id);
       await AsyncStorage.setItem("activeArray", JSON.stringify(currentArray));
       await AsyncStorage.setItem("currentSoundIndex", JSON.stringify(index));
+      await increaseNumOfPlay(id);
     } catch (error) {
       uiCtx.toastBoard(error.message);
     }
@@ -273,13 +291,13 @@ const SoundContextProvider = ({ children }) => {
   };
 
   const playNextHandler = async () => {
-    const status = await soundRef.current.getStatusAsync();
-    if (!status?.isLoaded) {
-      return uiCtx.toastBoard("Still loading");
-    }
+    // const status = await soundRef.current.getStatusAsync();
+    // if (!status?.isLoaded) {
+    //   return uiCtx.toastBoard("Still loading");
+    // }
     try {
       if (!authCtx.subscribed && authCtx.points <= 0) {
-        Alert.alert("Points", "Not enough to complete this action");
+        Alert.alert("Points", "Not enough to complete this action\nGo to your profile page and switch on subscibed mode");
         toast("Not enough Point to complete this action");
         throw new Error("you do not have enough points");
       }
@@ -295,6 +313,13 @@ const SoundContextProvider = ({ children }) => {
         currentSoundIndex.current++;
       }
 
+      getCurrentSound(
+        currentSoundArray.current,
+        currentSoundArray.current[currentSoundIndex.current].id
+      );
+
+      loadSound(currentSoundArray.current[currentSoundIndex.current].url);
+
       await AsyncStorage.setItem(
         "soundId",
         currentSoundArray.current[currentSoundIndex.current].id
@@ -307,26 +332,22 @@ const SoundContextProvider = ({ children }) => {
         "currentSoundIndex",
         JSON.stringify(currentSoundIndex.current)
       );
-
-      getCurrentSound(
-        currentSoundArray.current,
+      await increaseNumOfPlay(
         currentSoundArray.current[currentSoundIndex.current].id
       );
-
-      loadSound(currentSoundArray.current[currentSoundIndex.current].url);
     } catch (error) {
       console.log(error);
     }
   };
 
   const playPrevHandler = async () => {
-    const status = await soundRef.current.getStatusAsync();
-    if (!status?.isLoaded) {
-      return uiCtx.toastBoard("Still loading");
-    }
+    // const status = await soundRef.current.getStatusAsync();
+    // if (!status?.isLoaded) {
+    //   return uiCtx.toastBoard("Still loading");
+    // }
     try {
       if (!authCtx.subscribed && authCtx.points <= 0) {
-        Alert.alert("Points", "Not enough to complete this action");
+        Alert.alert("Points", "Not enough to complete this action\nGo to your profile page and switch on subscibed mode");
         toast("Not enough Point to complete this action");
         throw new Error("you do not have enough points");
       }
@@ -342,6 +363,13 @@ const SoundContextProvider = ({ children }) => {
         currentSoundIndex.current--;
       }
 
+      getCurrentSound(
+        currentSoundArray.current,
+        currentSoundArray.current[currentSoundIndex.current].id
+      );
+
+      loadSound(currentSoundArray.current[currentSoundIndex.current].url);
+
       await AsyncStorage.setItem(
         "soundId",
         currentSoundArray.current[currentSoundIndex.current].id
@@ -355,12 +383,9 @@ const SoundContextProvider = ({ children }) => {
         JSON.stringify(currentSoundIndex.current)
       );
 
-      getCurrentSound(
-        currentSoundArray.current,
+      await increaseNumOfPlay(
         currentSoundArray.current[currentSoundIndex.current].id
       );
-
-      loadSound(currentSoundArray.current[currentSoundIndex.current].url);
     } catch (error) {
       console.log(error);
     }
@@ -427,6 +452,7 @@ const SoundContextProvider = ({ children }) => {
 
   const contextValue = {
     soundRef,
+    allSounds,
     loadSound,
     playingBoard,
     soundPlayHandler,

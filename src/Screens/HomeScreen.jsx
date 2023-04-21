@@ -8,6 +8,7 @@ import {
   View,
   ToastAndroid,
   BackHandler,
+  RefreshControl,
 } from "react-native";
 import React, { useCallback, useContext, useEffect, useState } from "react";
 import { theme } from "../utils/colors";
@@ -21,16 +22,40 @@ import { SoundContext } from "../store/soundFunc";
 import { AuthContext } from "../store/auth";
 import { UiContext } from "../store/ui";
 import { useFocusEffect } from "@react-navigation/native";
-import { sendNotificationApi } from "../utils/api";
+import { fetchSounds, sendNotificationApi } from "../utils/api";
 
 const HomeScreen = () => {
   const colorIndex = useContext(ThemeContext).colorIndex;
   const soundCtx = useContext(SoundContext);
   const authCtx = useContext(AuthContext);
   const uiCtx = useContext(UiContext);
-  const recomended = allSounds.filter((sound) => sound.screen === "recomended");
   const [greetingText, setGreetingText] = useState("");
   const hour = new Date().getHours();
+  const [recomended, setRecomended] = useState([]);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    const fetchedSounds = await fetchSounds();
+    setRecomended(
+      fetchedSounds
+        .sort((a, b) => {
+          if (a.numOfPlay > b.numOfPlay) {
+            return -1;
+          } else if (b.numOfPlay > a.numOfPlay) {
+            return 1;
+          } else {
+            return 0;
+          }
+        })
+        .slice(0, 6)
+    );
+    setRefreshing(false);
+  };
+
+  useState(() => {
+    onRefresh();
+  }, []);
 
   useFocusEffect(
     useCallback(() => {
@@ -143,6 +168,9 @@ const HomeScreen = () => {
             />
           )}
           ListHeaderComponent={Header}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
         />
       </View>
     </>

@@ -1,6 +1,4 @@
 import {
-  Alert,
-  Dimensions,
   FlatList,
   Image,
   ImageBackground,

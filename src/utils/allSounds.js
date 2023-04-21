@@ -84,11 +84,11 @@ export const allSounds = [
   //New fase
 
   {
-    soundName: "Amin",
-    owner: "Ayra Starr",
+    soundName: "A New Horizon",
+    owner: "Howard Harper-Barnes",
     image: sampleImage[7],
     id: "eyrtofdfsfhjkoi",
-    url: "https://github.com/skybaba123/sound-haven-mp3/raw/main/Amin.mp3",
+    url: "https://github.com/skybaba123/sound-haven-mp3/raw/main/SH_A%20New%20Horizon%20-%20Howard%20Harper-Barnes.mp3",
     screen: "explore",
     category: ["Piano", "Relaxation"],
   },
@@ -178,7 +178,7 @@ export const catData = [
   },
 
   {
-    title: "Ambient",
+    title: "Empowering",
     cover: sampleImage[3],
     id: "bvh7oem794nd8u",
   },

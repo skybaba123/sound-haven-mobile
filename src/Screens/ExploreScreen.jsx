@@ -6,16 +6,17 @@ import {
   Pressable,
   FlatList,
   Dimensions,
+  RefreshControl,
 } from "react-native";
-import React, { useContext } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import HeadText from "../UI/HeadText";
 import { ThemeContext } from "../store/theme";
 import { theme } from "../utils/colors";
 import Sound from "../components/Sound";
-import { allSounds, catData } from "../utils/allSounds";
+import { catData } from "../utils/allSounds";
 import { SoundContext } from "../store/soundFunc";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
+import { fetchSounds } from "../utils/api";
 
 const Category = ({ cover, title, id }) => {
   const colorIndex = useContext(ThemeContext).colorIndex;
@@ -27,10 +28,7 @@ const Category = ({ cover, title, id }) => {
     //   screen: "categoryContent",
     //   params: { id, cover, title },
     // });
-
     navigation.navigate("categoryContent", { id, cover, title });
-
-    console.log({ cover, title, id });
   };
 
   return (
@@ -93,21 +91,36 @@ const Header = () => {
 };
 
 const ExploreScreen = () => {
-  const explore = allSounds.filter((sound) => sound.screen === "explore");
   const soundCtx = useContext(SoundContext);
+  const [newSounds, setNewSounds] = useState([]);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    const fetchedSounds = await fetchSounds();
+    setNewSounds(() =>
+      fetchedSounds.filter((sound) => sound.createdAt + 259200000 > Date.now())
+    );
+    setRefreshing(false);
+  };
+
+  useEffect(() => {
+    onRefresh();
+  }, []);
 
   return (
     <View style={styles.container}>
       <FlatList
         showsVerticalScrollIndicator={false}
-        data={explore}
+        data={newSounds}
+        initialNumToRender={5}
         renderItem={({ item, index }) => (
           <Sound
             onPress={soundCtx.soundPlayHandler.bind(
               this,
               index,
               item.id,
-              explore
+              newSounds
             )}
             soundName={item.soundName}
             owner={item.owner}
@@ -115,11 +128,14 @@ const ExploreScreen = () => {
             url={item.url}
             id={item.id}
             index={index}
-            currentArray={explore}
+            currentArray={newSounds}
           />
         )}
         keyExtractor={(item) => item.id}
         ListHeaderComponent={Header}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
       />
     </View>
   );

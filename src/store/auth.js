@@ -48,6 +48,11 @@ const AuthContextProvider = ({ children }) => {
     updateUserDetails(user);
   };
 
+  // useEffect(async () => {
+  //   const reset = ["token", "mode", "currentSoundIndex", "activeArray"];
+  //   await AsyncStorage.multiRemove(reset);
+  // }, []);
+
   const updateUserDetails = (user = Object) => {
     const {
       fullName,

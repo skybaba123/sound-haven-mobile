@@ -7,7 +7,7 @@ import Sound from "../components/Sound";
 const PlaylistContent = ({ route }) => {
   const soundCtx = useContext(SoundContext);
 
-  const playlist = allSounds.filter((sound) =>
+  const playlist = soundCtx.allSounds.filter((sound) =>
     route.params.playlist.includes(sound.id)
   );
 
