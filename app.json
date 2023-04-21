@@ -1,12 +1,11 @@
 {
   "expo": {
-    "name": "sound-haven",
-    "slug": "sound-haven",
+    "name": "Sound Haven",
+    "slug": "soundHaven",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "assets": ["./assets/Fonts/Satisfy-Regular.ttf"],
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
@@ -17,15 +16,26 @@
     },
     "assetBundlePatterns": ["**/*"],
     "ios": {
-      "supportsTablet": true
+      "buildNumber": "1.0.0",
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSPhotoLibraryUsageDescription": "Allow $(PRODUCT_NAME) to access your photos.",
+        "NSPhotoLibraryAddUsageDescription": "Allow $(PRODUCT_NAME) to save photos."
+      }
     },
     "android": {
-      "permissions": ["BACKGROUND_AUDIO"],
-      "useNextNotificationsApi": true,
+      "versionCode": 1,
+      "permissions": [
+        "BACKGROUND_AUDIO",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.ACCESS_MEDIA_LOCATION"
+      ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#000000"
-      }
+      },
+      "package": "com.skybaba.soundHaven"
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -39,6 +49,11 @@
           "isAccessMediaLocationEnabled": true
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "11de9163-f0ce-4b20-af0b-70afb69138e2"
+      }
+    }
   }
 }
