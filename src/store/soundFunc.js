@@ -163,6 +163,8 @@ const SoundContextProvider = ({ children }) => {
         await soundRef.current.unloadAsync();
       }
 
+      // https://drive.google.com/u/0/uc?id=${url}&export=download
+
       const googleDriveUrl = `https://drive.google.com/u/0/uc?id=${url}&export=download`;
       const otherUrl = url;
       const checkUrl = url.toLowerCase().includes("http");
@@ -236,7 +238,10 @@ const SoundContextProvider = ({ children }) => {
     // }
     try {
       if (!authCtx.subscribed && authCtx.points <= 0) {
-        Alert.alert("Points", "Not enough to complete this action.\nGo to your profile page and switch on subscibed mode");
+        Alert.alert(
+          "Points",
+          "Not enough to complete this action.\nGo to your profile page and switch on subscibed mode"
+        );
         throw new Error("You do not have enough points");
       }
 
@@ -297,7 +302,10 @@ const SoundContextProvider = ({ children }) => {
     // }
     try {
       if (!authCtx.subscribed && authCtx.points <= 0) {
-        Alert.alert("Points", "Not enough to complete this action\nGo to your profile page and switch on subscibed mode");
+        Alert.alert(
+          "Points",
+          "Not enough to complete this action\nGo to your profile page and switch on subscibed mode"
+        );
         toast("Not enough Point to complete this action");
         throw new Error("you do not have enough points");
       }
@@ -347,7 +355,10 @@ const SoundContextProvider = ({ children }) => {
     // }
     try {
       if (!authCtx.subscribed && authCtx.points <= 0) {
-        Alert.alert("Points", "Not enough to complete this action\nGo to your profile page and switch on subscibed mode");
+        Alert.alert(
+          "Points",
+          "Not enough to complete this action\nGo to your profile page and switch on subscibed mode"
+        );
         toast("Not enough Point to complete this action");
         throw new Error("you do not have enough points");
       }

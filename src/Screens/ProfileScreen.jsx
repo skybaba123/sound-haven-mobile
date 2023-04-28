@@ -8,6 +8,7 @@ import {
   Text,
   View,
   Switch,
+  ToastAndroid,
 } from "react-native";
 import React, { useContext, useEffect, useState } from "react";
 import HeadText from "../UI/HeadText";
@@ -23,6 +24,9 @@ import { getUser } from "../utils/api";
 import Load from "../UI/Load";
 import { UiContext } from "../store/ui";
 import { SoundContext } from "../store/soundFunc";
+import * as ImagePicker from "expo-image-picker";
+import ImageResizer from "@bam.tech/react-native-image-resizer";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const Card = ({
   ionicons,
@@ -85,11 +89,14 @@ const ProfileScreen = ({ navigation }) => {
   const soundCtx = useContext(SoundContext);
   const [loading, setLoading] = useState(false);
   const [switched, setSwitched] = useState(false);
+  const [loadingAvatar, setLoadingAvatar] = useState(false);
+  const [profileImageBase64, setProfileImageBase64] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       const data = await getUser();
+      setProfileImageBase64(data?.avatar);
       authCtx.setPoints(data.points);
       setLoading(false);
     };
@@ -137,6 +144,54 @@ const ProfileScreen = ({ navigation }) => {
     }, 2500);
   };
 
+  const pickImageHandler = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      aspect: [4, 3],
+      allowsEditing: true,
+      quality: 0.08,
+      base64: true,
+    });
+
+    if (!result.canceled) {
+      try {
+        setLoadingAvatar(true);
+        const token = await AsyncStorage.getItem("token");
+
+        const res = await fetch(
+          "https://sound-haven-server.onrender.com/user/avatar/upload",
+          {
+            method: "POST",
+            body: JSON.stringify({ avatar: result.assets[0].base64 }),
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (!res.ok) throw new Error("File Too Large");
+
+        console.log(res.status);
+        const data = await res.json();
+        setProfileImageBase64(data.avatar);
+      } catch (error) {
+        ToastAndroid.showWithGravity(
+          error.message,
+          ToastAndroid.SHORT,
+          ToastAndroid.CENTER
+        );
+      }
+    } else {
+      ToastAndroid.showWithGravity(
+        "No picture Chosen",
+        ToastAndroid.SHORT,
+        ToastAndroid.CENTER
+      );
+    }
+    setLoadingAvatar(false);
+  };
+
   return (
     <View style={styles.container}>
       <View
@@ -162,19 +217,31 @@ const ProfileScreen = ({ navigation }) => {
         </Text>
       </View>
 
-      <View
+      <Pressable
+        onPress={pickImageHandler}
         style={[
           styles.imageStyle,
           { backgroundColor: theme[`sBg-${colorIndex}`] },
         ]}
       >
-        <Text
-          style={[styles.profileText, { color: theme[`pT-${colorIndex}`] }]}
-        >
-          {authCtx.fullName[0].toUpperCase()}
-          {authCtx.fullName[1].toUpperCase()}
-        </Text>
-      </View>
+        {!profileImageBase64 && !loadingAvatar && (
+          <Text
+            style={[styles.profileText, { color: theme[`pT-${colorIndex}`] }]}
+          >
+            {authCtx.fullName[0].toUpperCase()}
+            {authCtx.fullName[1].toUpperCase()}
+          </Text>
+        )}
+
+        {loadingAvatar && <Load size={20} color={theme[`ac-${colorIndex}`]} />}
+
+        {profileImageBase64 && !loadingAvatar && (
+          <Image
+            style={{ width: "100%", height: "100%" }}
+            source={{ uri: "data:image/jpeg;base64," + profileImageBase64 }}
+          />
+        )}
+      </Pressable>
       <Text style={[styles.nameText, { color: theme[`pT-${colorIndex}`] }]}>
         {authCtx.fullName}
       </Text>
@@ -257,6 +324,7 @@ const styles = StyleSheet.create({
     marginBottom: "4%",
     justifyContent: "center",
     alignItems: "center",
+    overflow: "hidden",
   },
 
   profileText: {
